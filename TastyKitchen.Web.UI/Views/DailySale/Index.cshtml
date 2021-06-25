@@ -1,0 +1,56 @@
+﻿@model IEnumerable<TastyKitchen.Web.UI.Models.DailySale>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+<h2>Daily Sale</h2>
+<p>
+    <a asp-action="Create">Add Daily Sale</a>
+</p>
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.SaleType)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Amount)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Date)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SaleType)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Amount)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Date)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+
+            }
+            @using (Html.BeginForm("Index", "DailySale", new { pageIndex = @ViewBag.PreviousPage }, FormMethod.Post))
+            {
+                <button class="btn btn-dark">Previous</button>
+            }
+            @using (Html.BeginForm("Index", "DailySale", new { pageIndex = @ViewBag.nextPage }, FormMethod.Post))
+            {
+                <button class="btn btn-dark">Next</button>
+            }
+        </tbody>
+    </table>
+</div>
