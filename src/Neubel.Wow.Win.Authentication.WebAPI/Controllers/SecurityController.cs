@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Neubel.Wow.Win.Authentication.Common;
 using Neubel.Wow.Win.Authentication.Core.Model.Roles;
@@ -35,7 +36,8 @@ namespace Neubel.Wow.Win.Authentication.WebAPI.Controllers
 
             if (result.IsSuccessful)
             {
-                var userToken = _mapper.Map<Core.Model.LoginToken, DTO.LoginToken>(result.RequestedObject);
+                DTO.LoginToken userToken = _mapper.Map<Core.Model.LoginToken, DTO.LoginToken>(result.RequestedObject);
+                HttpContext.Session.SetString("JWToken", userToken.AccessToken);
                 return Ok(userToken);
             }
 

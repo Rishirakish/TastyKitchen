@@ -58,17 +58,19 @@ namespace Neubel.Wow.Win.Authentication.Services
                     validationMessages.Add(new ValidationMessage { Reason = "Access denied.", Severity = ValidationSeverity.Error });
                     return new RequestResult<LoginToken>(validationMessages);
                 }
-                int changeIntervalDays = 30;
-                if (user.OrgId != 0)
-                {
-                    var passwordPolicy = _securityParameterService.Get(user.OrgId);
-                    changeIntervalDays = passwordPolicy.ChangeIntervalDays;
-                }
-                if(passwordLogin.ChangeDate.AddDays(changeIntervalDays) < DateTime.Today)
-                {
-                    validationMessages.Add(new ValidationMessage { Reason = "Password expired.", Severity = ValidationSeverity.Error });
-                    return new RequestResult<LoginToken>(validationMessages);
-                }
+                #region this needs to be implemented once we have change password UI.
+                //int changeIntervalDays = 30;
+                //if (user.OrgId != 0)
+                //{
+                //    var passwordPolicy = _securityParameterService.Get(user.OrgId);
+                //    changeIntervalDays = passwordPolicy.ChangeIntervalDays;
+                //}
+                //if(passwordLogin.ChangeDate.AddDays(changeIntervalDays) < DateTime.Today)
+                //{
+                //    validationMessages.Add(new ValidationMessage { Reason = "Password expired.", Severity = ValidationSeverity.Error });
+                //    return new RequestResult<LoginToken>(validationMessages);
+                //}
+                #endregion
 
                 loginRequest.Id = passwordLogin.UserId;
                 token = GenerateTokens(loginRequest.UserName);             

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
 using System;
@@ -9,6 +10,7 @@ using TastyKitchen.Web.UI.Models;
 
 namespace TastyKitchen.Web.UI.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
