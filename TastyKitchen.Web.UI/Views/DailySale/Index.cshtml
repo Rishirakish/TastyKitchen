@@ -53,4 +53,8 @@
             }
         </tbody>
     </table>
+    @using (Html.BeginForm("ExportToExcel", "DailySale", FormMethod.Get))
+    {
+        <button class="btn btn-link">Export To Excel</button>
+    }
 </div>

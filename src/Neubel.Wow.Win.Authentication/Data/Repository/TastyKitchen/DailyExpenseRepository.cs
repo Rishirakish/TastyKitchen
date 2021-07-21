@@ -27,7 +27,7 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
         {
             using IDbConnection db = _connectionFactory.GetConnection;
             
-            var query = db.QueryMultiple("SELECT COUNT(*) FROM [DailyExpense] where isDeleted=0;SELECT* FROM [DailyExpense] ORDER BY Id desc OFFSET ((@PageNumber - 1) * @Rows) ROWS FETCH NEXT @Rows ROWS ONLY", new { PageNumber = pageIndex, Rows = pageSize }, commandType: CommandType.Text);
+            var query = db.QueryMultiple("SELECT COUNT(*) FROM [DailyExpense] where isDeleted=0;SELECT* FROM [DailyExpense] where isDeleted=0 ORDER BY Id desc OFFSET ((@PageNumber - 1) * @Rows) ROWS FETCH NEXT @Rows ROWS ONLY", new { PageNumber = pageIndex, Rows = pageSize }, commandType: CommandType.Text);
             var row = query.Read<int>().First();
             var pageResult = query.Read<DailyExpense>().ToList();
             return new StaticPagedList<DailyExpense>(pageResult, pageIndex, pageSize, row);

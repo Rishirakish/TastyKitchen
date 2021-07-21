@@ -1,14 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using TastyKitchen.Web.UI.Models;
 
 namespace TastyKitchen.Web.UI.Controllers
 {
+    [Authorize]
     public class DailySaleController : Controller
     {
         private readonly ILogger<DailySaleController> _logger;
@@ -209,6 +213,37 @@ namespace TastyKitchen.Web.UI.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin")]
+        public IActionResult ExportToExcel()
+        {
+            List<DailySaleExcelDTO> resultsDTO = new List<DailySaleExcelDTO>();
+            var results = _dailySaleService.Get();
+            foreach (var item in results)
+            {
+                resultsDTO.Add(new DailySaleExcelDTO 
+                { 
+                    Id = item.Id, 
+                    Amount = item.Amount,
+                    Date = item.Date.ToString("MM/dd/yyyy hh:mm tt"), 
+                    SaleType = item.Type 
+                });
+            }
+
+            var stream = new MemoryStream();
+
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var package = new ExcelPackage(stream))
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Sheet1");
+                worksheet.Cells.LoadFromCollection(resultsDTO, true);
+                package.Save();
+            }
+            stream.Position = 0;
+            string excelName = $"TastyKitchenSale-{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.xlsx";
+            return File(stream, "application/vdn.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
         }
     }
 }

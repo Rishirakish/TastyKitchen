@@ -2,10 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using TastyKitchen.Web.UI.Models;
 
 namespace TastyKitchen.Web.UI.Controllers
@@ -223,6 +226,39 @@ namespace TastyKitchen.Web.UI.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin")]
+        public IActionResult ExportToExcel()
+        {
+            List<DailyExpenseExcelDTO> resultsDTO = new List<DailyExpenseExcelDTO>();
+            var results = _dailyExpenseService.Get();
+            foreach (var item in results)
+            {
+                resultsDTO.Add(new DailyExpenseExcelDTO
+                { 
+                    Id = item.Id, 
+                    Amount = item.Amount,
+                    Date = item.Date.ToString("MM/dd/yyyy hh:mm tt"), 
+                    Name = item.Name, 
+                    Quantity = item.Quantity, 
+                    Unit = item.Unit 
+                });
+            }
+
+            var stream = new MemoryStream();
+
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var package = new ExcelPackage(stream))
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Sheet1");
+                worksheet.Cells.LoadFromCollection(resultsDTO, true);
+                package.Save();
+            }
+            stream.Position = 0;
+            string excelName = $"TastyKitchenExpense-{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.xlsx";
+            return File(stream, "application/vdn.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
         }
     }
 }
