@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
@@ -6,6 +8,7 @@ using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using TastyKitchen.Web.UI.Models;
@@ -17,10 +20,13 @@ namespace TastyKitchen.Web.UI.Controllers
     {
         private readonly ILogger<DailySaleController> _logger;
         private readonly IDailySaleService _dailySaleService;
-        public DailySaleController(ILogger<DailySaleController> logger, IDailySaleService dailySaleService)
+        private readonly IWebHostEnvironment _hostingEnvironment;
+
+        public DailySaleController(ILogger<DailySaleController> logger, IDailySaleService dailySaleService, IWebHostEnvironment hostingEnvironment)
         {
             _logger = logger;
             _dailySaleService = dailySaleService;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         [HttpGet]
@@ -223,12 +229,12 @@ namespace TastyKitchen.Web.UI.Controllers
             var results = _dailySaleService.Get();
             foreach (var item in results)
             {
-                resultsDTO.Add(new DailySaleExcelDTO 
-                { 
-                    Id = item.Id, 
+                resultsDTO.Add(new DailySaleExcelDTO
+                {
+                    Id = item.Id,
                     Amount = item.Amount,
-                    Date = item.Date.ToString("MM/dd/yyyy hh:mm tt"), 
-                    SaleType = item.Type 
+                    Date = item.Date.ToString("MM/dd/yyyy hh:mm tt"),
+                    SaleType = item.Type
                 });
             }
 
@@ -244,6 +250,257 @@ namespace TastyKitchen.Web.UI.Controllers
             stream.Position = 0;
             string excelName = $"TastyKitchenSale-{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.xlsx";
             return File(stream, "application/vdn.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Sysadmin,Admin")]
+        public IActionResult ImportFromExcel(IFormFile file)
+        {
+            
+            if (file == null || file.Length == 0)
+                return Content("File Not Selected");
+
+            string fileExtension = Path.GetExtension(file.FileName);
+            if (fileExtension != ".xls" && fileExtension != ".xlsx")
+                return Content("File Not Selected");
+
+            var rootFolder = _hostingEnvironment.WebRootPath;
+            var fileName = file.FileName;
+            var filePath = Path.Combine(rootFolder, "uploadedFiles", fileName);
+            var fileLocation = new FileInfo(filePath);
+
+            if (file.Length <= 0 && file.Length < (1000000 / 2)) // not more than 0.5 MB excel file)
+                return BadRequest("File not found or size is more than specified limit");
+
+            try
+            {
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    file.CopyTo(fileStream);
+                }
+
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using (ExcelPackage package = new ExcelPackage(fileLocation))
+                {
+                    ExcelWorksheet workSheet = package.Workbook.Worksheets["Sheet1"];
+                    //var workSheet = package.Workbook.Worksheets.First();
+                    int totalRows = workSheet.Dimension.Rows;
+
+                    var dailySale = new List<Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen.DailySale>();
+
+                    for (int i = 2; i <= totalRows; i++)
+                    {
+                        if (workSheet.Cells[i, 3].Value != null
+                            && workSheet.Cells[i, 4].Value != null
+                            && workSheet.Cells[i, 5].Value != null)
+                        {
+                            dailySale.Add(new Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen.DailySale
+                            {
+                                Type = workSheet.Cells[i, 3].Value.ToString(),
+                                Amount = Double.Parse(workSheet.Cells[i, 4].Value.ToString()),
+                                Date = DateTime.Parse(workSheet.Cells[i, 5].Value.ToString())
+                            });
+                        }
+                    }
+                    _dailySaleService.AddCollection(dailySale);
+                }
+            }
+            finally
+            {
+                System.IO.File.Delete(filePath);
+            }
+            return RedirectToAction("Index", "DailySale");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Sysadmin,Admin")]
+        public IActionResult ImportDailySale(List<IFormFile> files)
+        {
+            foreach (var file in files)
+            {
+
+                if (file == null || file.Length == 0)
+                    return Content("File Not Selected");
+
+                string fileExtension = Path.GetExtension(file.FileName);
+                if (fileExtension != ".rtf" && fileExtension != ".RTF")
+                    return Content("File Not Selected");
+
+                var rootFolder = _hostingEnvironment.WebRootPath;
+                var fileName = file.FileName;
+                var filePath = Path.Combine(rootFolder, "uploadedFiles", fileName);
+                var fileLocation = new FileInfo(filePath);
+
+                if (file.Length <= 0 && file.Length < (1000000 / 2)) // not more than 0.5 MB excel file)
+                    return BadRequest("File not found or size is more than specified limit");
+
+                try
+                {
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+                    string content = Read(filePath);
+                    string[] lines = content.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+                    string reportName = string.Empty;
+                    if (!string.IsNullOrEmpty(lines[2].Trim()))
+                        reportName = lines[2].Trim();
+
+                    DateTime reportDate;
+                    if (!string.IsNullOrEmpty(lines[3].Trim()))
+                    {
+                        string reportDateStr = lines[3].Trim().Split(" ")[0];
+
+                        DateTime dt;
+                        if (DateTime.TryParseExact(reportDateStr,
+                                                    "d-M-yyyy",
+                                                    CultureInfo.InvariantCulture,
+                                                    DateTimeStyles.None,
+                            out dt))
+                        {
+                            reportDate = dt;
+                        }
+                    }
+
+                    if (reportName == "BILL SALE REPORT(DAILY -Z)")
+                    {
+                        string[] splitValues = new string[2];
+                        splitValues[0] = " ";
+                        splitValues[1] = "CSH";
+
+                        Dictionary<string, string> billDetails = new Dictionary<string, string>();
+                        string total = string.Empty;
+                        for (int i = 7; i < lines.Length; i++)
+                        {
+                            if (lines[i].Trim() == "GRAND TOTAL")
+                            {
+                                var grandTotalRow = lines[i + 4].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                                total = grandTotalRow[grandTotalRow.Length - 1];
+                                break;
+                            }
+
+                            var row = lines[i].Split(splitValues, StringSplitOptions.RemoveEmptyEntries);
+                            billDetails.Add(row[0], row[row.Length - 1]);
+                        }
+                    }
+
+                    else if (reportName == "PLU  SALE REPORT (DAILY - Z)")
+                    {
+                        List<MenuItemWiseSaleData> billDetails = new List<MenuItemWiseSaleData>();
+                        string grandTotal = string.Empty;
+                        string totalQuantity = string.Empty;
+                        for (int i = 7; i < lines.Length; i++)
+                        {
+                            if (lines[i].Trim().StartsWith("GRAND TOTAL"))
+                            {
+                                var grandTotalRow = lines[i].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                                grandTotal = grandTotalRow[grandTotalRow.Length - 1];
+                                totalQuantity = grandTotalRow[grandTotalRow.Length - 2];
+                                break;
+                            }
+
+                            var rowCoumns = lines[i].Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                            MenuItemWiseSaleData menuItem = new MenuItemWiseSaleData();
+                            bool isQuantityColumnDone = false; ;
+                            for (int j = 1; j < rowCoumns.Length; j++)
+                            {
+                                double result = 0;
+                                if (!string.IsNullOrEmpty(rowCoumns[j]) && !double.TryParse(rowCoumns[j], out result))
+                                {
+                                    menuItem.Name += string.IsNullOrEmpty(menuItem.Name) ? rowCoumns[j] : " " + rowCoumns[j];
+                                }
+                                else if (isQuantityColumnDone)
+                                {
+                                    menuItem.Amount = result;
+                                }
+                                else
+                                {
+                                    menuItem.Quantity = result;
+                                    isQuantityColumnDone = true;
+                                }
+                            }
+                            billDetails.Add(menuItem);
+                        }
+
+                    }
+
+                    else if (reportName == "FINANCIAL REPORT (DAILY - Z)")
+                    {
+                        List<MenuCategoryWiseSaleData> billDetails = new List<MenuCategoryWiseSaleData>();
+                        string grandTotal = string.Empty;
+                        string totalQuantity = string.Empty;
+                        for (int i = 7; i < lines.Length; i++)
+                        {
+                            if (lines[i].Trim().StartsWith("TOTAL SALE"))
+                            {
+                                var grandTotalRow = lines[i].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                                grandTotal = grandTotalRow[grandTotalRow.Length - 1];
+                                totalQuantity = grandTotalRow[grandTotalRow.Length - 2];
+                                break;
+                            }
+
+                            var rowCoumns = lines[i].Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                            MenuCategoryWiseSaleData menuItem = new MenuCategoryWiseSaleData();
+                            bool isQuantityColumnDone = false; ;
+                            for (int j = 1; j < rowCoumns.Length; j++)
+                            {
+                                double result = 0;
+                                if (!string.IsNullOrEmpty(rowCoumns[j]) && !double.TryParse(rowCoumns[j], out result))
+                                {
+                                    menuItem.Name += string.IsNullOrEmpty(menuItem.Name) ? rowCoumns[j] : " " + rowCoumns[j];
+                                }
+                                else if (isQuantityColumnDone)
+                                {
+                                    menuItem.Amount = result;
+                                }
+                                else
+                                {
+                                    menuItem.Quantity = result;
+                                    isQuantityColumnDone = true;
+                                }
+                            }
+                            if (rowCoumns.Length > 1)
+                                billDetails.Add(menuItem);
+                        }
+
+                    }
+                }
+                finally
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+            return RedirectToAction("Index", "DailySale");
+        }
+
+        public class MenuItemWiseSaleData
+        {
+            public string Name { get; set; }
+            public double Quantity { get; set; }
+            public double Amount { get; set; }
+        }
+        public class MenuCategoryWiseSaleData
+        {
+            public string Name { get; set; }
+            public double Quantity { get; set; }
+            public double Amount { get; set; }
+        }
+
+        private string Read(string file)
+        {
+            try
+            {
+                var reader = new StreamReader(file);
+                var content = reader.ReadToEnd();
+                reader.Close();
+                return content;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

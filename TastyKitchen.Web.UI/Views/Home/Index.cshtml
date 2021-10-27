@@ -34,94 +34,50 @@
         <tbody>
             @foreach (var item in Model)
             {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Quantity)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Unit)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Amount)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Date)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Unit)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Amount)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Date)
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
 
             }
             @using (Html.BeginForm("Index", "Home", new { pageIndex = @ViewBag.PreviousPage }, FormMethod.Post))
             {
-            <button class="btn btn-dark">Previous</button>
+                <button class="btn btn-dark">Previous</button>
             }
             @using (Html.BeginForm("Index", "Home", new { pageIndex = @ViewBag.nextPage }, FormMethod.Post))
             {
-            <button class="btn btn-dark">Next</button>
+                <button class="btn btn-dark">Next</button>
             }
         </tbody>
     </table>
 
     @using (Html.BeginForm("ExportToExcel", "Home", FormMethod.Get))
     {
-    <button class="btn btn-link">Export To Excel</button>
+        <button class="btn btn-link">Export To Excel</button>
     }
 </div>
-
-
-@*<div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.DailySale.Type)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DailySale.Amount)
-                </th>
-
-                <th>
-                    @Html.DisplayNameFor(model => model.DailySale.Date)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.DailySale.Type)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.DailySale.Amount)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.DailySale.Date)
-                    </td>
-                    <td>
-                        <a asp-action="EditDailySale" asp-route-id="@item.DailySale.Id">Edit</a> |
-                        <a asp-action="DetailsDailySale" asp-route-id="@item.DailySale.Id">Details</a> |
-                        <a asp-action="DeleteDailySale" asp-route-id="@item.DailySale.Id">Delete</a>
-                    </td>
-                </tr>
-
-            }
-            @using (Html.BeginForm("Index", "Home", new { pageIndex = @ViewBag.DailySalePreviousPage }, FormMethod.Post))
-            {
-                <button>Previous</button>
-            }
-            @using (Html.BeginForm("Index", "Home", new { pageIndex = @ViewBag.DailySaleNextPage }, FormMethod.Post))
-            {
-                <button>Next</button>
-            }
-        </tbody>
-    </table>
-</div>*@
+<fieldset style="margin-top: 15px">
+    <legend>Upload an Excel file</legend>
+    <form method="post" asp-action="ImportFromExcel" asp-controller="Home" enctype="multipart/form-data">
+        <input type="file" name="file" / class="btn btn-dark">
+        <input type="submit" value="Upload" class="btn btn-dark" />
+    </form>
+</fieldset>

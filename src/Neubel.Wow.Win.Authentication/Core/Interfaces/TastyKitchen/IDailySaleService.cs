@@ -10,6 +10,7 @@ namespace Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen
         List<DailySale> GetPages(int pageIndex);
         DailySale Get(int id);
         RequestResult<int> Add(DailySale dailySale);
+        RequestResult<int> AddCollection(List<DailySale> dailySales);
         RequestResult<int> Update(int id, DailySale dailySale);
         bool Delete(int id);
     }

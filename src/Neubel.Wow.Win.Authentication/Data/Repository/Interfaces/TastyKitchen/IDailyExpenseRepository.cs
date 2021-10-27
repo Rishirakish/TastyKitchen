@@ -14,5 +14,6 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository.Interfaces.TastyKitchen
         IPagedList<DailyExpense> GetPages(int pageIndex = 1, int pageSize = 25);
         DailyExpense Get(int id);
         bool Delete(int id);
+        int InsertCollection(List<DailyExpense> expenses);
     }
 }

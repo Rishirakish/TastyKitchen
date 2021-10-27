@@ -60,6 +60,15 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
             return db.Execute(query, dailySale);
         }
 
+        public int InsertCollection(List<DailySale> dailySales)
+        {
+            string query = @"Insert into [DailySale](BillNumber, Amount, Date, Type) 
+                values (@BillNumber, @Amount, @Date, @Type)";
+
+            using IDbConnection db = _connectionFactory.GetConnection;
+            return db.Execute(query, dailySales);
+        }
+
         public int Update(DailySale dailySale)
         {
             string query = @"update [DailySale] Set 

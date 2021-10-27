@@ -11,6 +11,7 @@
   <ItemGroup>
     <Folder Include="Common\Enums\" />
     <Folder Include="Image\" />
+    <Folder Include="wwwroot\uploadedFiles\" />
   </ItemGroup>
 
   <ItemGroup>

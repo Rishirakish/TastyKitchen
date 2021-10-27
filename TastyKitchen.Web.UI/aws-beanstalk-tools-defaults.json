@@ -1,0 +1,20 @@
+
+{
+    "region" : "us-west-2",
+    "configuration" : "Debug",
+    "framework"     : "netcoreapp3.1",
+    "self-contained" : false,
+    "application"    : "TastyKitchenWebUI",
+    "environment"    : "TastyKitchenWebUI-dev",
+    "enable-xray"    : false,
+    "enhanced-health-type" : "basic",
+    "additional-options"   : "\"aws:autoscaling:launchconfiguration,SecurityGroups\"=\"sg-09778d962c1b43d1c,sg-024ea77484490a89d\";\"aws:ec2:vpc,Subnets\"=\"subnet-07987ba087c01ac1f,subnet-0b572767fe08918b6,subnet-07057e2b59cb3acd7\"",
+    "proxy-server"         : "nginx",
+    "solution-stack"       : "64bit Amazon Linux 2 v2.2.7 running .NET Core",
+    "environment-type"     : "SingleInstance",
+    "cname"                : "tastykitchenwebui-dev",
+    "instance-type"        : "t2.micro",
+    "key-pair"             : "IdentityManagerApiKeyPair",
+    "instance-profile"     : "aws-elasticbeanstalk-IdentityManagerApi-dev",
+    "service-role"         : "aws-elasticbeanstalk-service-role"
+}

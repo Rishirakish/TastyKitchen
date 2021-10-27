@@ -37,7 +37,7 @@ namespace Neubel.Wow.Win.Authentication.WebAPI.Controllers
             if (result.IsSuccessful)
             {
                 DTO.LoginToken userToken = _mapper.Map<Core.Model.LoginToken, DTO.LoginToken>(result.RequestedObject);
-                HttpContext.Session.SetString("JWToken", userToken.AccessToken);
+               // HttpContext.Session.SetString("JWToken", userToken.AccessToken);
                 return Ok(userToken);
             }
 

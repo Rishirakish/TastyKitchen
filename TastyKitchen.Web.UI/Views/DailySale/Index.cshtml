@@ -57,4 +57,22 @@
     {
         <button class="btn btn-link">Export To Excel</button>
     }
-</div>
+    <fieldset style="margin-top: 15px">
+        <legend>Upload an Excel file</legend>
+        <form method="post" asp-action="ImportFromExcel" asp-controller="DailySale" enctype="multipart/form-data">
+            <input type="file" name="file"  class="btn btn-dark">
+            <input type="submit" value="Upload" class="btn btn-dark" />
+        </form>
+    </fieldset>
+
+    <fieldset style="margin-top: 15px">
+        <legend>Upload the sales Data</legend>
+        <form method="post" asp-action="ImportDailySale" asp-controller="DailySale" enctype="multipart/form-data">
+            <input type="file" name="files"  class="btn btn-dark" multiple>
+            <input type="submit" value="Upload" class="btn btn-dark" />
+        </form>
+    </fieldset>
+    @using (Html.BeginForm("ImportDailySale", "DailySale", FormMethod.Get))
+    {
+        <button class="btn btn-link">Sales Import</button>
+    }

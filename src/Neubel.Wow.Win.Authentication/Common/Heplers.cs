@@ -218,6 +218,9 @@ namespace Neubel.Wow.Win.Authentication.Common
         }
         public static bool ValidateDisallowedChars(string password, string disallowedChars)
         {
+            if (string.IsNullOrEmpty(disallowedChars))
+                return true;
+
             foreach (char c in disallowedChars)
             {
                 if (password.IndexOf(c) != -1)

@@ -7,6 +7,7 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository.Interfaces.TastyKitchen
     public interface IDailySaleRepository
     {
         int Insert(DailySale dailySale);
+        int InsertCollection(List<DailySale> dailySales);
         int Update(DailySale dailySale);
         List<DailySale> Get();
         IPagedList<DailySale> GetPages(int pageIndex = 1, int pageSize = 25);

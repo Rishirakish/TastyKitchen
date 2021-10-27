@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
@@ -18,11 +20,13 @@ namespace TastyKitchen.Web.UI.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IDailyExpenseService _dailyExpenseService;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public HomeController(ILogger<HomeController> logger, IDailyExpenseService dailyExpenseService)
+        public HomeController(ILogger<HomeController> logger, IDailyExpenseService dailyExpenseService, IWebHostEnvironment hostingEnvironment)
         {
             _logger = logger;
             _dailyExpenseService = dailyExpenseService;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         [HttpGet]
@@ -259,6 +263,70 @@ namespace TastyKitchen.Web.UI.Controllers
             stream.Position = 0;
             string excelName = $"TastyKitchenExpense-{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.xlsx";
             return File(stream, "application/vdn.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Sysadmin,Admin")]
+        public IActionResult ImportFromExcel(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return Content("File Not Selected");
+
+            string fileExtension = Path.GetExtension(file.FileName);
+            if (fileExtension != ".xls" && fileExtension != ".xlsx")
+                return Content("File Not Selected");
+
+            var rootFolder = _hostingEnvironment.WebRootPath;
+            var fileName = file.FileName;
+            var filePath = Path.Combine(rootFolder, "uploadedFiles", fileName);
+            var fileLocation = new FileInfo(filePath);
+
+            if (file.Length <= 0 && file.Length < (1000000 / 2)) // not more than 0.5 MB excel file)
+                return BadRequest("File not found or size is more than specified limit");
+
+            try
+            {
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    file.CopyTo(fileStream);
+                }
+
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                using (ExcelPackage package = new ExcelPackage(fileLocation))
+                {
+                    ExcelWorksheet workSheet = package.Workbook.Worksheets["Sheet1"];
+                    //var workSheet = package.Workbook.Worksheets.First();
+                    int totalRows = workSheet.Dimension.Rows;
+
+                    var dailyExpense = new List<Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen.DailyExpense>();
+
+                    for (int i = 2; i <= totalRows; i++)
+                    {
+                        if (workSheet.Cells[i, 2].Value != null
+                            && workSheet.Cells[i, 3].Value != null
+                            && workSheet.Cells[i, 4].Value != null
+                            && workSheet.Cells[i, 5].Value != null)
+                        {
+                            var quantityAndUnit = workSheet.Cells[i, 4].Value.ToString().Split(" ");
+                        dailyExpense.Add(new Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen.DailyExpense
+                        {
+                            Name = workSheet.Cells[i, 2].Value.ToString(),
+                            Amount = int.Parse(workSheet.Cells[i, 3].Value.ToString()),
+                            Quantity = quantityAndUnit.Length > 0 ? double.Parse(quantityAndUnit[0]) : 0,
+                            Unit = quantityAndUnit.Length > 1 ? quantityAndUnit[1] : string.Empty,
+                            Date = DateTime.Parse(workSheet.Cells[i, 5].Value.ToString())
+                        });
+                    }
+                    }
+                    _dailyExpenseService.AddCollection(dailyExpense);
+                }
+            }
+            finally
+            {
+                System.IO.File.Delete(filePath);
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

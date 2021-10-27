@@ -21,6 +21,12 @@ namespace Neubel.Wow.Win.Authentication.Services.TastyKitchen
             return new RequestResult<int>(1);
         }
 
+        public RequestResult<int> AddCollection(List<DailyExpense> expenses)
+        {
+            _dailyExpenseRepository.InsertCollection(expenses);
+            return new RequestResult<int>(1);
+        }
+
         public bool Delete(int id)
         {
             _dailyExpenseRepository.Delete(id);
