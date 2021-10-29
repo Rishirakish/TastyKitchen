@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
+using Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -34,11 +35,11 @@ namespace TastyKitchen.Web.UI.Controllers
         {
             var sales = _dailySaleService.GetPages(1);
 
-            List<DailySale> dailySales = new List<DailySale>();
+            List<Models.DailySale> dailySales = new List<Models.DailySale>();
 
             foreach (var item in sales)
             {
-                dailySales.Add(new DailySale { Id = item.Id, Amount = item.Amount, Date = item.Date, BillNumber = item.BillNumber, SaleType = item.Type });
+                dailySales.Add(new Models.DailySale { Id = item.Id, Amount = item.Amount, Date = item.Date, BillNumber = item.BillNumber, SaleType = item.Type });
             }
             ViewBag.nextPage = 2;
             ViewBag.PreviousPage = 0;
@@ -50,11 +51,11 @@ namespace TastyKitchen.Web.UI.Controllers
         {
             var expenses = _dailySaleService.GetPages(pageIndex);
 
-            List<DailySale> dailySales = new List<DailySale>();
+            List<Models.DailySale> dailySales = new List<Models.DailySale>();
 
             foreach (var item in expenses)
             {
-                dailySales.Add(new DailySale { Id = item.Id, Amount = item.Amount, Date = item.Date, BillNumber = item.BillNumber, SaleType = item.Type });
+                dailySales.Add(new Models.DailySale { Id = item.Id, Amount = item.Amount, Date = item.Date, BillNumber = item.BillNumber, SaleType = item.Type });
             }
             ViewBag.nextPage = pageIndex + 1;
             ViewBag.PreviousPage = pageIndex == 1 ? 1 : pageIndex - 1;
@@ -64,12 +65,12 @@ namespace TastyKitchen.Web.UI.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View(new DailySale { Date = DateTime.Now });
+            return View(new Models.DailySale { Date = DateTime.Now });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind] DailySale dailySale)
+        public IActionResult Create([Bind] Models.DailySale dailySale)
         {
             if (ModelState.IsValid)
             {
@@ -104,7 +105,7 @@ namespace TastyKitchen.Web.UI.Controllers
                 return NotFound();
             }
 
-            var expenseUIModel = new DailySale
+            var expenseUIModel = new Models.DailySale
             {
                 Date = sale.Date,
                 Amount = sale.Amount,
@@ -118,7 +119,7 @@ namespace TastyKitchen.Web.UI.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, [Bind] DailySale dailySale)
+        public IActionResult Edit(int id, [Bind] Models.DailySale dailySale)
         {
             if (id != dailySale.Id)
             {
@@ -157,7 +158,7 @@ namespace TastyKitchen.Web.UI.Controllers
                 return NotFound();
             }
 
-            var saleUIModel = new DailySale
+            var saleUIModel = new Models.DailySale
             {
                 Date = sale.Date,
                 Amount = sale.Amount,
@@ -187,7 +188,7 @@ namespace TastyKitchen.Web.UI.Controllers
             }
 
 
-            var saleUIModel = new DailySale
+            var saleUIModel = new Models.DailySale
             {
                 Date = sale.Date,
                 Amount = sale.Amount,
@@ -348,7 +349,7 @@ namespace TastyKitchen.Web.UI.Controllers
                     if (!string.IsNullOrEmpty(lines[2].Trim()))
                         reportName = lines[2].Trim();
 
-                    DateTime reportDate;
+                    DateTime? reportDate = null; ;
                     if (!string.IsNullOrEmpty(lines[3].Trim()))
                     {
                         string reportDateStr = lines[3].Trim().Split(" ")[0];
@@ -364,31 +365,35 @@ namespace TastyKitchen.Web.UI.Controllers
                         }
                     }
 
-                    if (reportName == "BILL SALE REPORT(DAILY -Z)")
+                    if (reportName == "BILL SALE  REPORT (DAILY - Z)")
                     {
                         string[] splitValues = new string[2];
                         splitValues[0] = " ";
                         splitValues[1] = "CSH";
 
-                        Dictionary<string, string> billDetails = new Dictionary<string, string>();
-                        string total = string.Empty;
+                        BillWiseSaleReport billWiseSaleReport = new BillWiseSaleReport { Date = reportDate.Value };
+
                         for (int i = 7; i < lines.Length; i++)
                         {
+                            BillWiseSaleData billWiseSaleData = new BillWiseSaleData();
                             if (lines[i].Trim() == "GRAND TOTAL")
                             {
                                 var grandTotalRow = lines[i + 4].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                                total = grandTotalRow[grandTotalRow.Length - 1];
+                                billWiseSaleReport.TotalAmount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
                                 break;
                             }
 
                             var row = lines[i].Split(splitValues, StringSplitOptions.RemoveEmptyEntries);
-                            billDetails.Add(row[0], row[row.Length - 1]);
+                            billWiseSaleData.BillNumber = row[0];
+                            billWiseSaleData.Amount = double.Parse(row[row.Length - 1]);
+                            billWiseSaleReport.BillWiseSales.Add(billWiseSaleData);
                         }
+                        _dailySaleService.AddBillWiseSaleReport(billWiseSaleReport);
                     }
 
                     else if (reportName == "PLU  SALE REPORT (DAILY - Z)")
                     {
-                        List<MenuItemWiseSaleData> billDetails = new List<MenuItemWiseSaleData>();
+                        MenuItemWiseSaleReport billDetails = new MenuItemWiseSaleReport { Date = reportDate.Value };
                         string grandTotal = string.Empty;
                         string totalQuantity = string.Empty;
                         for (int i = 7; i < lines.Length; i++)
@@ -396,7 +401,7 @@ namespace TastyKitchen.Web.UI.Controllers
                             if (lines[i].Trim().StartsWith("GRAND TOTAL"))
                             {
                                 var grandTotalRow = lines[i].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                                grandTotal = grandTotalRow[grandTotalRow.Length - 1];
+                                billDetails.TotalAmount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
                                 totalQuantity = grandTotalRow[grandTotalRow.Length - 2];
                                 break;
                             }
@@ -421,14 +426,14 @@ namespace TastyKitchen.Web.UI.Controllers
                                     isQuantityColumnDone = true;
                                 }
                             }
-                            billDetails.Add(menuItem);
+                            billDetails.MenuItemWiseSales.Add(menuItem);
                         }
-
+                        _dailySaleService.AddMenuItemWiseSaleReport(billDetails);
                     }
 
                     else if (reportName == "FINANCIAL REPORT (DAILY - Z)")
                     {
-                        List<MenuCategoryWiseSaleData> billDetails = new List<MenuCategoryWiseSaleData>();
+                        MenuCategoryWiseSaleReport billDetails = new MenuCategoryWiseSaleReport { Date = reportDate.Value };
                         string grandTotal = string.Empty;
                         string totalQuantity = string.Empty;
                         for (int i = 7; i < lines.Length; i++)
@@ -436,14 +441,14 @@ namespace TastyKitchen.Web.UI.Controllers
                             if (lines[i].Trim().StartsWith("TOTAL SALE"))
                             {
                                 var grandTotalRow = lines[i].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                                grandTotal = grandTotalRow[grandTotalRow.Length - 1];
+                                billDetails.TotalAmount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
                                 totalQuantity = grandTotalRow[grandTotalRow.Length - 2];
                                 break;
                             }
 
                             var rowCoumns = lines[i].Split(" ", StringSplitOptions.RemoveEmptyEntries);
                             MenuCategoryWiseSaleData menuItem = new MenuCategoryWiseSaleData();
-                            bool isQuantityColumnDone = false; ;
+                            bool isQuantityColumnDone = false;
                             for (int j = 1; j < rowCoumns.Length; j++)
                             {
                                 double result = 0;
@@ -462,9 +467,9 @@ namespace TastyKitchen.Web.UI.Controllers
                                 }
                             }
                             if (rowCoumns.Length > 1)
-                                billDetails.Add(menuItem);
+                                billDetails.MenuCategoryWiseSales.Add(menuItem);
                         }
-
+                        _dailySaleService.AddMenuCategoryWiseSaleReport(billDetails);
                     }
                 }
                 finally
@@ -473,19 +478,6 @@ namespace TastyKitchen.Web.UI.Controllers
                 }
             }
             return RedirectToAction("Index", "DailySale");
-        }
-
-        public class MenuItemWiseSaleData
-        {
-            public string Name { get; set; }
-            public double Quantity { get; set; }
-            public double Amount { get; set; }
-        }
-        public class MenuCategoryWiseSaleData
-        {
-            public string Name { get; set; }
-            public double Quantity { get; set; }
-            public double Amount { get; set; }
         }
 
         private string Read(string file)

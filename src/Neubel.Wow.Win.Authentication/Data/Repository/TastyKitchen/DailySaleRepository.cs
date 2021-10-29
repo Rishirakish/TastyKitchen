@@ -69,6 +69,96 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
             return db.Execute(query, dailySales);
         }
 
+        public int InsertBillWiseSaleReport(BillWiseSaleReport billWiseSaleReport)
+        {
+            var p = new DynamicParameters();
+            p.Add("Id", 0, DbType.Int32, ParameterDirection.Output);
+            p.Add("@Amount", billWiseSaleReport.TotalAmount);
+            p.Add("@Date", billWiseSaleReport.Date);
+
+            string billWiseSaleReportQuery = @"Insert into [BillWiseSaleReport](Amount, Date) 
+                values (@Amount ,@Date);
+                SELECT @Id = @@IDENTITY";
+
+            string billWiseSaleDataQuery = @"Insert into [BillWiseSaleData](BillNumber, Amount, BillWiseSaleReportId) 
+                values (@BillNumber ,@Amount, @BillWiseSaleReportId)";
+
+            using IDbConnection db = _connectionFactory.GetConnection;
+            using var transaction = db.BeginTransaction();
+            db.Execute(billWiseSaleReportQuery, p, transaction);
+
+            int insertedId = p.Get<int>("@Id");
+
+            foreach (var item in billWiseSaleReport.BillWiseSales)
+            {
+                item.BillWiseSaleReportId = insertedId;
+            }
+            db.Execute(billWiseSaleDataQuery, billWiseSaleReport.BillWiseSales, transaction);
+
+            transaction.Commit();
+            return insertedId;
+        }
+
+        public int InsertMenuCategoryWiseSaleReport(MenuCategoryWiseSaleReport menuCategoryWiseSaleReport)
+        {
+            var p = new DynamicParameters();
+            p.Add("Id", 0, DbType.Int32, ParameterDirection.Output);
+            p.Add("@Amount", menuCategoryWiseSaleReport.TotalAmount);
+            p.Add("@Date", menuCategoryWiseSaleReport.Date);
+
+            string menuCategoryWiseSaleReportQuery = @"Insert into [MenuCategoryWiseSaleReport](Amount, Date) 
+                values (@Amount ,@Date);
+                SELECT @Id = @@IDENTITY";
+
+            string menuCategoryWiseSaleDataQuery = @"Insert into [MenuCategoryWiseSaleData](Name, Quantity, Amount, MenuCategoryWiseSaleReportId) 
+                values (@Name, @Quantity ,@Amount, @MenuCategoryWiseSaleReportId)";
+
+            using IDbConnection db = _connectionFactory.GetConnection;
+            using var transaction = db.BeginTransaction();
+            db.Execute(menuCategoryWiseSaleReportQuery, p, transaction);
+
+            int insertedId = p.Get<int>("@Id");
+
+            foreach (var item in menuCategoryWiseSaleReport.MenuCategoryWiseSales)
+            {
+                item.MenuCategoryWiseSaleReportId = insertedId;
+            }
+            db.Execute(menuCategoryWiseSaleDataQuery, menuCategoryWiseSaleReport.MenuCategoryWiseSales, transaction);
+
+            transaction.Commit();
+            return insertedId;
+        }
+
+        public int InsertMenuItemWiseSaleReport(MenuItemWiseSaleReport menuItemWiseSaleReport)
+        {
+            var p = new DynamicParameters();
+            p.Add("Id", 0, DbType.Int32, ParameterDirection.Output);
+            p.Add("@Amount", menuItemWiseSaleReport.TotalAmount);
+            p.Add("@Date", menuItemWiseSaleReport.Date);
+
+            string menuItemWiseSaleReportQuery = @"Insert into [MenuItemWiseSaleReport](Amount, Date) 
+                values (@Amount ,@Date);
+                SELECT @Id = @@IDENTITY";
+
+            string menuItemWiseSaleDataQuery = @"Insert into [MenuItemWiseSaleData](Name, Quantity, Amount, MenuItemWiseSaleReportId) 
+                values (@Name, @Quantity ,@Amount, @menuItemWiseSaleReportId)";
+
+            using IDbConnection db = _connectionFactory.GetConnection;
+            using var transaction = db.BeginTransaction();
+            db.Execute(menuItemWiseSaleReportQuery, p, transaction);
+
+            int insertedId = p.Get<int>("@Id");
+
+            foreach (var item in menuItemWiseSaleReport.MenuItemWiseSales)
+            {
+                item.MenuItemWiseSaleReportId = insertedId;
+            }
+            db.Execute(menuItemWiseSaleDataQuery, menuItemWiseSaleReport.MenuItemWiseSales, transaction);
+
+            transaction.Commit();
+            return insertedId;
+        }
+
         public int Update(DailySale dailySale)
         {
             string query = @"update [DailySale] Set 

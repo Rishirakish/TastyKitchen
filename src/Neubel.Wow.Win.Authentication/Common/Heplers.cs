@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,6 +14,20 @@ namespace Neubel.Wow.Win.Authentication.Common
         private static char[] charSet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
 
         #region Public Methods.
+
+        public static DateTime? ConverddmmyyyyTommddyyyy(string dateString)
+        {
+            DateTime dt;
+            if (DateTime.TryParseExact(dateString,
+                                        "d-M-yyyy",
+                                        CultureInfo.InvariantCulture,
+                                        DateTimeStyles.None,
+                out dt))
+            {
+                return dt;
+            }
+            return null;
+        }
 
         public static bool IsInOrganizationContext(SessionContext sessionContext, int intendedOrganizationId)
         {

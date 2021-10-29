@@ -53,5 +53,20 @@ namespace Neubel.Wow.Win.Authentication.Services.TastyKitchen
             _dailySaleRepository.Update(dailySale);
             return new RequestResult<int>(1);
         }
+
+        public int AddBillWiseSaleReport(BillWiseSaleReport billWiseSaleReport)
+        {
+            return _dailySaleRepository.InsertBillWiseSaleReport(billWiseSaleReport);
+        }
+
+        public int AddMenuCategoryWiseSaleReport(MenuCategoryWiseSaleReport menuCategoryWiseSaleReport)
+        {
+            return _dailySaleRepository.InsertMenuCategoryWiseSaleReport(menuCategoryWiseSaleReport);
+        }
+
+        public int AddMenuItemWiseSaleReport(MenuItemWiseSaleReport menuItemWiseSaleReport)
+        {
+            return _dailySaleRepository.InsertMenuItemWiseSaleReport(menuItemWiseSaleReport);
+        }
     }
 }

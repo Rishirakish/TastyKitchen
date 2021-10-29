@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Neubel.Wow.Win.Authentication.Common;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
 using OfficeOpenXml;
 using System;
@@ -315,7 +316,7 @@ namespace TastyKitchen.Web.UI.Controllers
                             Amount = int.Parse(workSheet.Cells[i, 3].Value.ToString()),
                             Quantity = quantityAndUnit.Length > 0 ? double.Parse(quantityAndUnit[0]) : 0,
                             Unit = quantityAndUnit.Length > 1 ? quantityAndUnit[1] : string.Empty,
-                            Date = DateTime.Parse(workSheet.Cells[i, 5].Value.ToString())
+                            Date = Helpers.ConverddmmyyyyTommddyyyy(workSheet.Cells[i, 5].Value.ToString().Split(" ")[0]).Value
                         });
                     }
                     }

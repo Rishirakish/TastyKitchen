@@ -13,5 +13,8 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository.Interfaces.TastyKitchen
         IPagedList<DailySale> GetPages(int pageIndex = 1, int pageSize = 25);
         DailySale Get(int id);
         bool Delete(int id);
+        int InsertBillWiseSaleReport(BillWiseSaleReport billWiseSaleReport);
+        int InsertMenuCategoryWiseSaleReport(MenuCategoryWiseSaleReport menuCategoryWiseSaleReport);
+        int InsertMenuItemWiseSaleReport(MenuItemWiseSaleReport menuItemWiseSaleReport);
     }
 }

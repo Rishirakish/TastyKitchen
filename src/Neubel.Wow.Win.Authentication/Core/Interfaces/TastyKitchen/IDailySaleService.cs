@@ -13,5 +13,8 @@ namespace Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen
         RequestResult<int> AddCollection(List<DailySale> dailySales);
         RequestResult<int> Update(int id, DailySale dailySale);
         bool Delete(int id);
+        int AddBillWiseSaleReport(BillWiseSaleReport billWiseSaleReport);
+        int AddMenuCategoryWiseSaleReport(MenuCategoryWiseSaleReport menuCategoryWiseSaleReport);
+        int AddMenuItemWiseSaleReport(MenuItemWiseSaleReport menuItemWiseSaleReport);
     }
 }
