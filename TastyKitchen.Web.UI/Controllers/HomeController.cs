@@ -31,6 +31,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Index()
         {
 
@@ -48,6 +49,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Index(int pageIndex)
         {
             
@@ -65,6 +67,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Create()
         {
             return View(new DailyExpense { Date = DateTime.Now });
@@ -72,6 +75,7 @@ namespace TastyKitchen.Web.UI.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Create([Bind] DailyExpense dailyExpense)
         {
             if (ModelState.IsValid)
@@ -94,6 +98,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Edit(int? id)
         {
             if (id == null)
@@ -126,6 +131,7 @@ namespace TastyKitchen.Web.UI.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Edit(int id, [Bind] DailyExpense expense)
         {
             if (id != expense.Id)
@@ -152,6 +158,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Details(int? id)
         {
             if (id == null)
@@ -181,6 +188,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Delete(int? id)
         {
             if (id == null)
@@ -212,6 +220,7 @@ namespace TastyKitchen.Web.UI.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult DeleteConfirmed(int? id)
         {
             if (id == null)
@@ -304,24 +313,29 @@ namespace TastyKitchen.Web.UI.Controllers
 
                     for (int i = 2; i <= totalRows; i++)
                     {
-                        if (workSheet.Cells[i, 2].Value != null
+                        if (workSheet.Cells[i, 1].Value != null
+                            && workSheet.Cells[i, 2].Value != null
                             && workSheet.Cells[i, 3].Value != null
-                            && workSheet.Cells[i, 4].Value != null
                             && workSheet.Cells[i, 5].Value != null)
                         {
-                            var quantityAndUnit = workSheet.Cells[i, 4].Value.ToString().Split(" ");
+                            //var quantityAndUnit = workSheet.Cells[i, 4].Value.ToString().Split(" ");
                         dailyExpense.Add(new Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen.DailyExpense
                         {
-                            Name = workSheet.Cells[i, 2].Value.ToString(),
-                            Amount = int.Parse(workSheet.Cells[i, 3].Value.ToString()),
-                            Quantity = quantityAndUnit.Length > 0 ? double.Parse(quantityAndUnit[0]) : 0,
-                            Unit = quantityAndUnit.Length > 1 ? quantityAndUnit[1] : string.Empty,
+                            Name = workSheet.Cells[i, 1].Value.ToString(),
+                            Amount = Convert.ToInt32(workSheet.Cells[i, 2].Value),
+                            Quantity = double.Parse(workSheet.Cells[i, 3].Value.ToString()),
+                            Unit = workSheet.Cells[i, 4].Value != null ? workSheet.Cells[i, 4].Value.ToString() : string.Empty,
                             Date = Helpers.ConverddmmyyyyTommddyyyy(workSheet.Cells[i, 5].Value.ToString().Split(" ")[0]).Value
                         });
                     }
                     }
                     _dailyExpenseService.AddCollection(dailyExpense);
                 }
+            }
+            catch(Exception ex)
+            {
+                return RedirectToAction("Index", "Home", new { errorMessage = ex.Message, stackTrace = ex.StackTrace }); 
+
             }
             finally
             {

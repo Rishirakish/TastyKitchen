@@ -15,5 +15,6 @@ namespace Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen
         RequestResult<int> Update(int id, DailyExpense expense);
         bool Delete(int id);
         RequestResult<int> AddCollection(List<DailyExpense> expenses);
+        List<DailyExpense> Get(DateTime from, DateTime to);
     }
 }

@@ -3,12 +3,20 @@
 @{
     ViewData["Title"] = "Home Page";
 }
-<h2>Daily Sale</h2>
+
+<h2>&nbsp;&nbsp;Daily Sales</h2>
 <p>
-    <a asp-action="Create">Add Daily Sale</a>
+    &nbsp;&nbsp;<a asp-action="Create">Add Sale</a>
 </p>
-<div>
-    <table class="table">
+
+@*<h2>Daily Sale</h2>*@
+<!--<p style="background-color:white;">
+    <a href="~/DailySale/Create">-->
+@*<i class="fa fa-dashboard"></i>*@
+<!--Add Daily Sale</a>
+</p>-->
+<div style="margin-left:5px;">
+    <table class="table table-bordered table-condensed table-striped table-hover sortable">
         <thead>
             <tr>
                 <th>
@@ -45,11 +53,11 @@
             }
             @using (Html.BeginForm("Index", "DailySale", new { pageIndex = @ViewBag.PreviousPage }, FormMethod.Post))
             {
-                <button class="btn btn-dark">Previous</button>
+                <button class="btn-primary">Previous</button>
             }
             @using (Html.BeginForm("Index", "DailySale", new { pageIndex = @ViewBag.nextPage }, FormMethod.Post))
             {
-                <button class="btn btn-dark">Next</button>
+                <button class="btn-primary">Next</button>
             }
         </tbody>
     </table>
@@ -58,21 +66,18 @@
         <button class="btn btn-link">Export To Excel</button>
     }
     <fieldset style="margin-top: 15px">
-        <legend>Upload an Excel file</legend>
+        <legend>Upload the Online Order Excel</legend>
         <form method="post" asp-action="ImportFromExcel" asp-controller="DailySale" enctype="multipart/form-data">
-            <input type="file" name="file"  class="btn btn-dark">
-            <input type="submit" value="Upload" class="btn btn-dark" />
+            <input type="file" name="file" class="btn-primary" style="margin-left:5px;">
+            <input type="submit" value="Upload" class="btn-primary" style="margin-left:5px;"/>
         </form>
     </fieldset>
 
     <fieldset style="margin-top: 15px">
-        <legend>Upload the sales Data</legend>
+        <legend>Upload the daily sales reports</legend>
         <form method="post" asp-action="ImportDailySale" asp-controller="DailySale" enctype="multipart/form-data">
-            <input type="file" name="files"  class="btn btn-dark" multiple>
-            <input type="submit" value="Upload" class="btn btn-dark" />
+            <input type="file" name="files" class="btn-primary" style="margin-left:5px;" multiple>
+            <input type="submit" value="Upload" class="btn-primary" style="margin-left:5px;"   />
         </form>
     </fieldset>
-    @using (Html.BeginForm("ImportDailySale", "DailySale", FormMethod.Get))
-    {
-        <button class="btn btn-link">Sales Import</button>
-    }
+</div>

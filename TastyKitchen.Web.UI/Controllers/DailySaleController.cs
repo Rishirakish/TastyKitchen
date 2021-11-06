@@ -31,6 +31,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Index()
         {
             var sales = _dailySaleService.GetPages(1);
@@ -47,6 +48,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Index(int pageIndex)
         {
             var expenses = _dailySaleService.GetPages(pageIndex);
@@ -63,6 +65,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Create()
         {
             return View(new Models.DailySale { Date = DateTime.Now });
@@ -70,6 +73,7 @@ namespace TastyKitchen.Web.UI.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Create([Bind] Models.DailySale dailySale)
         {
             if (ModelState.IsValid)
@@ -91,6 +95,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Edit(int? id)
         {
             if (id == null)
@@ -119,6 +124,7 @@ namespace TastyKitchen.Web.UI.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Edit(int id, [Bind] Models.DailySale dailySale)
         {
             if (id != dailySale.Id)
@@ -144,6 +150,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Details(int? id)
         {
             if (id == null)
@@ -171,6 +178,7 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult Delete(int? id)
         {
             if (id == null)
@@ -201,6 +209,7 @@ namespace TastyKitchen.Web.UI.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Sysadmin,Admin,Manager")]
         public IActionResult DeleteConfirmed(int? id)
         {
             if (id == null)
@@ -367,9 +376,10 @@ namespace TastyKitchen.Web.UI.Controllers
 
                     if (reportName == "BILL SALE  REPORT (DAILY - Z)")
                     {
-                        string[] splitValues = new string[2];
+                        string[] splitValues = new string[3];
                         splitValues[0] = " ";
                         splitValues[1] = "CSH";
+                        splitValues[2] = "CRD";
 
                         BillWiseSaleReport billWiseSaleReport = new BillWiseSaleReport { Date = reportDate.Value };
 
@@ -379,7 +389,7 @@ namespace TastyKitchen.Web.UI.Controllers
                             if (lines[i].Trim() == "GRAND TOTAL")
                             {
                                 var grandTotalRow = lines[i + 4].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                                billWiseSaleReport.TotalAmount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
+                                billWiseSaleReport.Amount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
                                 break;
                             }
 
@@ -401,7 +411,7 @@ namespace TastyKitchen.Web.UI.Controllers
                             if (lines[i].Trim().StartsWith("GRAND TOTAL"))
                             {
                                 var grandTotalRow = lines[i].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                                billDetails.TotalAmount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
+                                billDetails.Amount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
                                 totalQuantity = grandTotalRow[grandTotalRow.Length - 2];
                                 break;
                             }
@@ -441,7 +451,7 @@ namespace TastyKitchen.Web.UI.Controllers
                             if (lines[i].Trim().StartsWith("TOTAL SALE"))
                             {
                                 var grandTotalRow = lines[i].Trim().Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                                billDetails.TotalAmount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
+                                billDetails.Amount = double.Parse(grandTotalRow[grandTotalRow.Length - 1]);
                                 totalQuantity = grandTotalRow[grandTotalRow.Length - 2];
                                 break;
                             }
@@ -478,6 +488,25 @@ namespace TastyKitchen.Web.UI.Controllers
                 }
             }
             return RedirectToAction("Index", "DailySale");
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Sysadmin,Admin")]
+        public IActionResult GetMonthSaleByDate()
+        {
+            var firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+            var firstDayOfPreviousMonth = firstDayOfMonth.AddMonths(-1);
+            var lastDayOfPreviousMonth = firstDayOfPreviousMonth.AddMonths(1).AddDays(-1);
+            List<MenuItemWiseSaleReport> previousMonthSalesData = _dailySaleService.GetMenuItemWiseSaleReport(firstDayOfPreviousMonth, lastDayOfPreviousMonth);
+
+            //Mapping to UI Model
+            List<SaleByDate> saleByDates = new List<SaleByDate>();
+            foreach (var item in previousMonthSalesData)
+            {
+                saleByDates.Add(new SaleByDate { Date = item.Date, Amount = item.Amount });
+            }
+            return Json(saleByDates);
         }
 
         private string Read(string file)

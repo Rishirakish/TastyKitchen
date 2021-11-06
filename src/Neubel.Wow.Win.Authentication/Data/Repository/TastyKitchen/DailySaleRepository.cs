@@ -41,7 +41,7 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
             return db.Query<DailySale>("Select top 1 * From [DailySale] where Id=@id and IsDeleted=0", new { id }).FirstOrDefault();
         }
 
-        public IPagedList<DailySale> GetPages(int pageIndex = 1, int pageSize = 25)
+        public IPagedList<DailySale> GetPages(int pageIndex = 1, int pageSize = 10)
         {
             using IDbConnection db = _connectionFactory.GetConnection;
 
@@ -73,7 +73,7 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
         {
             var p = new DynamicParameters();
             p.Add("Id", 0, DbType.Int32, ParameterDirection.Output);
-            p.Add("@Amount", billWiseSaleReport.TotalAmount);
+            p.Add("@Amount", billWiseSaleReport.Amount);
             p.Add("@Date", billWiseSaleReport.Date);
 
             string billWiseSaleReportQuery = @"Insert into [BillWiseSaleReport](Amount, Date) 
@@ -103,7 +103,7 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
         {
             var p = new DynamicParameters();
             p.Add("Id", 0, DbType.Int32, ParameterDirection.Output);
-            p.Add("@Amount", menuCategoryWiseSaleReport.TotalAmount);
+            p.Add("@Amount", menuCategoryWiseSaleReport.Amount);
             p.Add("@Date", menuCategoryWiseSaleReport.Date);
 
             string menuCategoryWiseSaleReportQuery = @"Insert into [MenuCategoryWiseSaleReport](Amount, Date) 
@@ -133,7 +133,7 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
         {
             var p = new DynamicParameters();
             p.Add("Id", 0, DbType.Int32, ParameterDirection.Output);
-            p.Add("@Amount", menuItemWiseSaleReport.TotalAmount);
+            p.Add("@Amount", menuItemWiseSaleReport.Amount);
             p.Add("@Date", menuItemWiseSaleReport.Date);
 
             string menuItemWiseSaleReportQuery = @"Insert into [MenuItemWiseSaleReport](Amount, Date) 
@@ -157,6 +157,39 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
 
             transaction.Commit();
             return insertedId;
+        }
+
+        public List<MenuItemWiseSaleReport> GetMenuItemWiseSaleReport(DateTime from, DateTime to)
+        {
+            using IDbConnection db = _connectionFactory.GetConnection;
+            var menuItemWiseSaleReport = db.Query<MenuItemWiseSaleReport>("Select * From [MenuItemWiseSaleReport] where Date>=@from and Date<=@to and IsDeleted=0", new { from, to }).ToList();
+
+            var menuItemWiseSaleData = db.Query<MenuItemWiseSaleData>("Select * From [MenuItemWiseSaleData] where MenuItemWiseSaleReportId IN @Ids", new { Ids = menuItemWiseSaleReport.Select(x => x.Id) }).ToList();
+
+            menuItemWiseSaleReport.ForEach(x => x.MenuItemWiseSales = menuItemWiseSaleData.Where(y => y.MenuItemWiseSaleReportId == x.Id).ToList());
+            return menuItemWiseSaleReport;
+        }
+
+        public List<BillWiseSaleReport> GetBillWiseSaleReport(DateTime from, DateTime to)
+        {
+            using IDbConnection db = _connectionFactory.GetConnection;
+            var billWiseSaleReport = db.Query<BillWiseSaleReport>("Select * From [BillWiseSaleReport] where Date>=@from and Date<=@to and IsDeleted=0", new { from, to }).ToList();
+
+            var billWiseSaleData = db.Query<BillWiseSaleData>("Select * From [BillWiseSaleData] where BillWiseSaleReportId IN @Ids", new { Ids = billWiseSaleReport.Select(x => x.Id) }).ToList();
+
+            billWiseSaleReport.ForEach(x => x.BillWiseSales = billWiseSaleData.Where(y => y.BillWiseSaleReportId == x.Id).ToList());
+            return billWiseSaleReport;
+        }
+
+        public List<MenuCategoryWiseSaleReport> GetMenuCategoryWiseSaleReport(DateTime from, DateTime to)
+        {
+            using IDbConnection db = _connectionFactory.GetConnection;
+            var menuCategoryWiseSaleReport = db.Query<MenuCategoryWiseSaleReport>("Select * From [MenuCategoryWiseSaleReport] where Date>=@from and Date<=@to and IsDeleted=0", new { from, to }).ToList();
+            
+            var menuCategoryWiseSaleData = db.Query<MenuCategoryWiseSaleData>("Select * From [MenuCategoryWiseSaleData] where MenuCategoryWiseSaleReportId IN @Ids", new { Ids = menuCategoryWiseSaleReport.Select(x => x.Id) }).ToList();
+
+            menuCategoryWiseSaleReport.ForEach(x => x.MenuCategoryWiseSales = menuCategoryWiseSaleData.Where(y => y.MenuCategoryWiseSaleReportId == x.Id).ToList());
+            return menuCategoryWiseSaleReport;
         }
 
         public int Update(DailySale dailySale)

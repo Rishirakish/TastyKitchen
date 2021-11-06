@@ -7,7 +7,7 @@ namespace Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen
     public class BillWiseSaleReport : Entity
     {
         public List<BillWiseSaleData> BillWiseSales { get; set; } = new List<BillWiseSaleData>();
-        public double TotalAmount { get; set; }
+        public double Amount { get; set; }
         public DateTime Date { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
 using Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen;
 using Neubel.Wow.Win.Authentication.Data.Repository.Interfaces.TastyKitchen;
+using System;
 using System.Collections.Generic;
 
 namespace Neubel.Wow.Win.Authentication.Services.TastyKitchen
@@ -36,6 +37,10 @@ namespace Neubel.Wow.Win.Authentication.Services.TastyKitchen
         public List<DailyExpense> Get()
         {
             return _dailyExpenseRepository.Get();
+        }
+        public List<DailyExpense> Get(DateTime from, DateTime to)
+        {
+            return _dailyExpenseRepository.Get(from, to);
         }
 
         public List<DailyExpense> GetPages(int pageIndex)

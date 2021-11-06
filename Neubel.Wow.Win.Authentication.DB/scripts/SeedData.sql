@@ -28,6 +28,7 @@ BEGIN
                (0, 'Sysadmin', 0 , 0),
 		       (1, 'Admin', 1 , 0),
 		       (2, 'ApplicationAdmin', 2 , 0),
+		       (2, 'Manager', 3 , 0),
 		       (3, 'GeneralUser', 6 , 0)
 
     SET IDENTITY_INSERT [dbo].[Role]  OFF
@@ -97,7 +98,8 @@ BEGIN
                ,[UserId]
                ,[ChangeDate])
          VALUES
-               (0, 'Fz3VkUWQRP+QLYvmMilCjoz5FMRHQM8OEJxzvxwpycI=', '4XgQuK7k1tMBmh3X46N9qQ==', 0, GetDate())
+               --(0, 'Fz3VkUWQRP+QLYvmMilCjoz5FMRHQM8OEJxzvxwpycI=', '4XgQuK7k1tMBmh3X46N9qQ==', 0, GetDate())
+			   (0, 'qnVDMZYlsGjs4chNs1/qPidI70eDUZ1fzUF5EdCqdl0=', 'NDlzcm0GY1GqMgn+urXX9Q==', 0, GetDate())
 
     SET IDENTITY_INSERT [dbo].[PasswordLogin]  OFF
 END

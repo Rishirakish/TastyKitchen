@@ -19,7 +19,7 @@ namespace Neubel.Wow.Win.Authentication.Common
         {
             DateTime dt;
             if (DateTime.TryParseExact(dateString,
-                                        "d-M-yyyy",
+                                        "d/M/yyyy",
                                         CultureInfo.InvariantCulture,
                                         DateTimeStyles.None,
                 out dt))

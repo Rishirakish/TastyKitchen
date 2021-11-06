@@ -2,6 +2,7 @@
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
 using Neubel.Wow.Win.Authentication.Core.Model.TastyKitchen;
 using Neubel.Wow.Win.Authentication.Data.Repository.Interfaces.TastyKitchen;
+using System;
 using System.Collections.Generic;
 
 namespace Neubel.Wow.Win.Authentication.Services.TastyKitchen
@@ -67,6 +68,19 @@ namespace Neubel.Wow.Win.Authentication.Services.TastyKitchen
         public int AddMenuItemWiseSaleReport(MenuItemWiseSaleReport menuItemWiseSaleReport)
         {
             return _dailySaleRepository.InsertMenuItemWiseSaleReport(menuItemWiseSaleReport);
+        }
+
+        public List<MenuItemWiseSaleReport> GetMenuItemWiseSaleReport(DateTime from, DateTime to)
+        {
+            return _dailySaleRepository.GetMenuItemWiseSaleReport(from, to);
+        }
+        public List<BillWiseSaleReport> GetBillWiseSaleReport(DateTime from, DateTime to)
+        {
+            return _dailySaleRepository.GetBillWiseSaleReport(from, to);
+        }
+        public List<MenuCategoryWiseSaleReport> GetMenuCategoryWiseSaleReport(DateTime from, DateTime to)
+        {
+            return _dailySaleRepository.GetMenuCategoryWiseSaleReport(from, to);
         }
     }
 }

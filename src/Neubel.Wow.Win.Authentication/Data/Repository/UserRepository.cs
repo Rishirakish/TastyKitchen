@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Dapper;
@@ -40,8 +41,10 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
                 values (@UserName, @FirstName, @LastName, @Email, @Mobile, @Country, @ISDCode, @TwoFactor, @Locked, @IsActive, @EmailValidationStatus, @MobileValidationStatus, @OrgId, @AdminLevel);
                 SELECT @Id = @@IDENTITY";
 
-            string passwordLoginInsertQuery = @"Insert into [PasswordLogin](PasswordHash, PasswordSalt, UserId) 
-                values (@PasswordHash, @PasswordSalt, @UserId)";
+            string passwordLoginInsertQuery = @"Insert into [PasswordLogin](PasswordHash, PasswordSalt, UserId, ChangeDate) 
+                values (@PasswordHash, @PasswordSalt, @UserId, @ChangeDate)";
+
+            string userRoleInsertQuery = @"Insert into [UserRole](UserId, RoleId) values (@UserId, @RoleId)";
 
             using IDbConnection db = _connectionFactory.GetConnection;
             using var transaction = db.BeginTransaction();
@@ -50,7 +53,11 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
             int insertedUserId = p.Get<int>("@Id");
 
             passwordLogin.UserId = insertedUserId;
+            passwordLogin.ChangeDate = DateTime.Now;
             db.Execute(passwordLoginInsertQuery, passwordLogin, transaction);
+
+            // assign the general user role by default.
+            db.Execute(userRoleInsertQuery, new { UserId = insertedUserId, RoleId = 3 }, transaction);
             transaction.Commit();
 
             return insertedUserId;

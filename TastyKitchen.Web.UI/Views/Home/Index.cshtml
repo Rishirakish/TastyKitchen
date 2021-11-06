@@ -4,12 +4,12 @@
 @{
     ViewData["Title"] = "Home Page";
 }
-<h2>Daily Expenses</h2>
+<h2>&nbsp;&nbsp;Daily Expenses</h2>
 <p>
-    <a asp-action="Create">Add Expense</a>
+    &nbsp;&nbsp;<a asp-action="Create">Add Expense</a>
 </p>
-<div>
-    <table class="table">
+<div style="margin-left:5px;">
+    <table class="table table-bordered table-condensed table-striped table-hover sortable">
         <thead>
             <tr>
                 <th>
@@ -60,24 +60,24 @@
             }
             @using (Html.BeginForm("Index", "Home", new { pageIndex = @ViewBag.PreviousPage }, FormMethod.Post))
             {
-                <button class="btn btn-dark">Previous</button>
+                <button class="btn-primary">Previous</button>
             }
             @using (Html.BeginForm("Index", "Home", new { pageIndex = @ViewBag.nextPage }, FormMethod.Post))
             {
-                <button class="btn btn-dark">Next</button>
+                <button class="btn-primary">Next</button>
             }
         </tbody>
     </table>
 
     @using (Html.BeginForm("ExportToExcel", "Home", FormMethod.Get))
     {
-        <button class="btn btn-link">Export To Excel</button>
+        <button class="btn-primary">Export To Excel</button>
     }
 </div>
 <fieldset style="margin-top: 15px">
-    <legend>Upload an Excel file</legend>
+    <legend>Upload the expense Excel</legend>
     <form method="post" asp-action="ImportFromExcel" asp-controller="Home" enctype="multipart/form-data">
-        <input type="file" name="file" / class="btn btn-dark">
-        <input type="submit" value="Upload" class="btn btn-dark" />
+        <input type="file" name="file" class="btn-primary" style="margin-left:5px;">
+        <input type="submit" value="Upload" class="btn-primary" style="margin-left:5px;" />
     </form>
 </fieldset>

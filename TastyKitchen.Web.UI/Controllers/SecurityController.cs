@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Neubel.Wow.Win.Authentication;
 using Neubel.Wow.Win.Authentication.Common;
@@ -37,10 +38,40 @@ namespace TastyKitchen.Web.UI.Controllers
             {
                 HttpContext.Session.SetString("Token", result.RequestedObject.AccessToken);
 
-                return RedirectToAction("Index", "Home");
+                return Json(new { status = true, message = "Login Successfull!" });
             }
 
             return View();
         }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult LoginOut()
+        {
+            HttpContext.Session.SetString("Token", null);
+
+            return View();
+        }
+
+        //public ActionResult Validate(Admins admin)
+        //{
+        //    var _admin = db.Admins.Where(s => s.Email == admin.Email);
+        //    if (_admin.Any())
+        //    {
+        //        if (_admin.Where(s => s.Password == admin.Password).Any())
+        //        {
+
+        //            return Json(new { status = true, message = "Login Successfull!" });
+        //        }
+        //        else
+        //        {
+        //            return Json(new { status = false, message = "Invalid Password!" });
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return Json(new { status = false, message = "Invalid Email!" });
+        //    }
+        //}
     }
 }

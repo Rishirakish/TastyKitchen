@@ -2,7 +2,7 @@
 (
 	[Id] BIGINT IDENTITY (1, 1) NOT NULL,
 	[Name] [varchar](200) NOT NULL,
-	[Quantity] [decimal](18, 0) NOT NULL,
+	[Quantity] [decimal](18, 0) NULL,
 	[Unit] [varchar](50) NULL,
 	[Amount] [decimal](18, 0) NOT NULL,
 	[Date] [datetime] NOT NULL,
