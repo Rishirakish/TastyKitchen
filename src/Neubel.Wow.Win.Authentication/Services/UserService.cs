@@ -4,6 +4,7 @@ using Neubel.Wow.Win.Authentication.Common;
 using Neubel.Wow.Win.Authentication.Core.Interfaces;
 using Neubel.Wow.Win.Authentication.Core.Model;
 using Neubel.Wow.Win.Authentication.Data.Repository;
+using Neubel.Wow.Win.Authentication.Services.Authorization;
 
 namespace Neubel.Wow.Win.Authentication.Services
 {

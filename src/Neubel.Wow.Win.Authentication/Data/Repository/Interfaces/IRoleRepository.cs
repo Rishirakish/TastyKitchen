@@ -14,5 +14,6 @@ namespace Neubel.Wow.Win.Authentication.Data.Repository
         List<string> Get(SessionContext sessionContext, string userName);
         List<(int, string)> GetRoleWithOrg(string userName);
         bool Delete(int id);
+        List<UserRoleWithClaim> GetRoleByOrganizationWithClaims(string userName);
     }
 }

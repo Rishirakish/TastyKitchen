@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Neubel.Wow.Win.Authentication.Common;
 using Neubel.Wow.Win.Authentication.Core.Interfaces.TastyKitchen;
+using Neubel.Wow.Win.Authentication.Services.Authorization;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,9 @@ namespace TastyKitchen.Web.UI.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Sysadmin,Admin,Manager")]
+        //[Authorize(Roles = "Sysadmin,Admin,Manager")]
+
+        [Authorize(Policy = PolicyTypes.Users.Manage)]
         public IActionResult Index()
         {
 

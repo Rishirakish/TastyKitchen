@@ -21,7 +21,7 @@ namespace Neubel.Wow.Win.Authentication.Infrastructure
                 var factory = DbProviderFactories.GetFactory("System.Data.SqlClient");
                 var conn = factory.CreateConnection();
                 if (conn == null) return null;
-                conn.ConnectionString = _configuration["ConnectionStrings:IdentityDBAws"];
+                conn.ConnectionString = _configuration["ConnectionStrings:IdentityDBLocal"];
                 conn.Open();
                 return conn;
             }

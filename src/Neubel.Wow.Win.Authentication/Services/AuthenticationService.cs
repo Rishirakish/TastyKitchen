@@ -9,6 +9,8 @@ using Microsoft.IdentityModel.Tokens;
 using Neubel.Wow.Win.Authentication.Common;
 using Neubel.Wow.Win.Authentication.Core.Interfaces;
 using Neubel.Wow.Win.Authentication.Data.Repository;
+using Neubel.Wow.Win.Authentication.Services.Authorization;
+using System.Linq;
 
 namespace Neubel.Wow.Win.Authentication.Services
 {
@@ -481,23 +483,28 @@ namespace Neubel.Wow.Win.Authentication.Services
             // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
             // You can add other claims here, if you want:
 
+            var roleByOrganizationWithClaims = _roleRepository.GetRoleByOrganizationWithClaims(sub);
+            var roleClaims = roleByOrganizationWithClaims.Select(x => new Claim(ClaimTypes.Role, x.RoleName));
+            var userRoleClaim = roleByOrganizationWithClaims.Select(x => new Claim(CustomClaimTypes.Permission, x.ClaimName));
+
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, sub),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, Helpers.ToUnixEpochDate(dateTime).ToString(), ClaimValueTypes.Integer64)
-            };
+            }.Union(roleClaims).Union(userRoleClaim).ToList();
 
-            var roles = _roleRepository.GetRoleWithOrg(sub);
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role.Item2));
-            }
+            //foreach (var role in roles)
+            //{
+            //    claims.Add(new Claim(ClaimTypes.Role, role.RoleName));
+            //}
 
-            if(sub.ToLower() == "sysadmin")
+            //claims.Add(new Claim(CustomClaimTypes.Permission, Permissions.UsersPermissions.Add));
+
+            if (sub.ToLower() == "sysadmin")
                 claims.Add(new Claim("OrganizationId", "0"));
             else
-            claims.Add(new Claim("OrganizationId", roles[0].Item1.ToString()));
+            claims.Add(new Claim("OrganizationId", roleByOrganizationWithClaims.FirstOrDefault().OrgId.ToString()));
             return claims;
         }
         #endregion

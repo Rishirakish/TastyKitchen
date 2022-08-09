@@ -12,6 +12,10 @@ namespace Neubel.Wow.Win.Authentication.Services
         private readonly ISecurityParameterRepository _securityParameterRepository;
         private readonly ILogger _logger;
 
+        public SecurityParameterService()
+        {
+
+        }
         public SecurityParameterService(ISecurityParameterRepository securityParameterRepository, ILogger logger)
         {
             _securityParameterRepository = securityParameterRepository;
